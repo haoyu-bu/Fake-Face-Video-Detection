@@ -15,7 +15,7 @@ except:
    import pickle
 
 def usage():
-    print "usage: " + sys.argv[0] + " -i input-feature-path -o output-dir -f frame-size-to-compare"
+    print "usage: " + sys.argv[0] + " -i input-feature-path -o output-dir"
 
 def read_features(feature_path):
     print "loading features..."
@@ -63,7 +63,7 @@ def read_features(feature_path):
     
     # clean data
     noise = []
-    min = 10000
+    min = sys.maxint
     name = None
     for k in blink:
         if len(blink[k]) !=  len(body[k]) or len(blink[k]) !=  len(gaze[k]):
@@ -132,14 +132,12 @@ def generate_tp(features, type='first'):
         tp[key] = tp_f
     return tp
 
-def classify(X, Y, f_X, portion=0.7):
+def classify(X, Y, f_X):
     X = np.reshape(X, (np.shape(X)[0], -1))
     f_X = np.reshape(f_X, (np.shape(f_X)[0], -1))
     rus = RandomUnderSampler(return_indices=True)
     X, Y, id_rus = rus.fit_sample(X, Y)
 
-    print sum(Y)
-    print len(Y)
     X, Y = shuffle(X, Y)
     X = np.array(X)
     f_X = shuffle(f_X)
@@ -161,7 +159,7 @@ def classify(X, Y, f_X, portion=0.7):
             i += 1
         clf.fit(X_train, y_train)
         predict = clf.predict(X_test)
-        tn, fp, fn, tp = sklearn.metrics.confusion_matrix(y_test, predict).ravel()
+        _, fp, _, tp = sklearn.metrics.confusion_matrix(y_test, predict).ravel()
         fps.append(fp)
         tps.append(tp)
     result['recall'] = np.mean(tps)
@@ -170,11 +168,7 @@ def classify(X, Y, f_X, portion=0.7):
 
     return result
 
-def normalize(x):
-    return (x) / np.std(x, ddof=1)
-
-def main(feature_path, out_dir, frame_size):
-    frame_size = int(frame_size)
+def main(feature_path, out_dir):
     tp_mean = []
     fp_mean = []
     for pid in range(32):
@@ -226,7 +220,7 @@ def main(feature_path, out_dir, frame_size):
         plt.ylabel('Rate')
         plt.xlabel('Frame Size K')
         #plt.show()
-        plt.savefig(str(pid+1) + ".jpg")
+        plt.savefig(os.path.join(out_dir, str(pid+1) + ".jpg"))
         plt.clf()
     
     for i in range(len(tp_mean)):
@@ -238,11 +232,11 @@ def main(feature_path, out_dir, frame_size):
     plt.ylabel('Rate')
     plt.xlabel('Frame Size K')
     #plt.show()
-    plt.savefig("mean.jpg")
+    plt.savefig(os.path.join(out_dir, "mean.jpg"))
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:o:f:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:o:')
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -252,9 +246,7 @@ if __name__ == '__main__':
             feature_path  = a
         elif o == '-o':
             out_dir = a
-        elif o == '-f':
-            frame_size = a
         else:
             assert False, "unhandled option"
     
-    main(feature_path, out_dir, frame_size)
+    main(feature_path, out_dir)
