@@ -12,7 +12,9 @@ Source codes of Fake Face Video Detection Using Talking Profile
 
 ## Dataset
 
-[DeepfakeTIMIT](https://www.idiap.ch/dataset/deepfaketimit)  dateset.
+* [DeepfakeTIMIT](https://www.idiap.ch/dataset/deepfaketimit)  dateset.
+
+  Download from [Google Drive](https://drive.google.com/file/d/1d-LfVOhr-M_-YlByF6iHZezayoDvJvfo/view?usp=sharing)
 
 ## Feature Extract
 
